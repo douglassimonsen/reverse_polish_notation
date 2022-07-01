@@ -9,22 +9,24 @@ SUB: "-"
 MUL: "*"
 DIV: "/"
 ''', parser='lalr')
-t = l.parse('* * + 3 2 - 5 1 - 6 2')
 commands = {
     c: eval(f'lambda a, b: a {c} b')
     for c in '+-*/'
 }
-def run(tree):
-    if tree.data in ('expr', 'start'):
-        for i, inst in enumerate(tree.children):
-            if inst.data not in ('val', 'command'):
-                tree.children[i] = run(inst)
-    if tree.data == 'expr':
-        command = tree.children[0].children[0]
-        arg1 = int(tree.children[1].children[0])
-        arg2 = int(tree.children[2].children[0])
-        return lark.Tree(lark.Token('Rule', 'val'), [lark.Token('__ANON_0', commands[command](arg1, arg2))])
-    else:
-        return int(tree.children[0].children[0])
+class RPN(lark.Transformer):
+    def expr(self, args):
+        command = args[0].children[0]
+        arg1 = int(args[1].children[0])
+        arg2 = int(args[2].children[0])
+        return lark.Tree(None, [commands[command](arg1, arg2)])
 
-print(run(t))
+    def start(self, args):
+        return int(args[0].children[0])
+
+
+def main(expression):
+    return RPN().transform(l.parse(expression))
+
+
+if __name__ == '__main__':
+    print(main('* * + 3 2 - 5 1 - 6 2'))
