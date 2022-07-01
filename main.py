@@ -1,9 +1,9 @@
 import lark
-l = lark.Lark('''
+lang = lark.Lark('''
 start: expr+
 expr: COMMAND " " (expr|VAL) " " (expr|VAL)
 COMMAND: "+"| "-" | "*" | "/"
-VAL: "-"? ("0".."9")+ "."?
+VAL: "-"? ("0".."9")+ "."? ("0".."9")*
 ADD: "+"
 SUB: "-"
 MUL: "*"
@@ -15,14 +15,14 @@ commands = {
 }
 class RPN(lark.Transformer):
     def expr(self, args):
-        return lark.Token('asd', value=commands[args[0]](int(args[1]), int(args[2])))
+        return commands[args[0]](float(args[1]), float(args[2]))
 
     def start(self, args):
-        return int(args[0])
+        return args[0]
 
 
 def main(expression):
-    return RPN().transform(l.parse(expression))
+    return RPN().transform(lang.parse(expression))
 
 
 if __name__ == '__main__':
