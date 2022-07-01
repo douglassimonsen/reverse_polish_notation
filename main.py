@@ -1,22 +1,18 @@
-from collections import deque
-from _operator import add, sub, mul, truediv
 import lark
 l = lark.Lark('''
 start: expr+
 expr: command " " (expr|val) " " (expr|val)
+command: ADD|SUB|MUL|DIV
 val: ("0".."9")+
 ADD: "+"
 SUB: "-"
 MUL: "*"
 DIV: "/"
-command: (ADD|SUB|MUL|DIV)
-''')
+''', parser='lalr')
 t = l.parse('* * + 3 2 - 5 1 - 6 2')
 commands = {
-    '+': lambda a, b: a + b,
-    '-': lambda a, b: a - b,
-    '*': lambda a, b: a * b,
-    '/': lambda a, b: a / b,
+    c: eval(f'lambda a, b: a {c} b')
+    for c in '+-*/'
 }
 def run(tree):
     if tree.data in ('expr', 'start'):
