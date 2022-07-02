@@ -2,16 +2,12 @@ import lark
 lang = lark.Lark('''
 start: expr+
 expr: COMMAND " " (expr|VAL) " " (expr|VAL)
-COMMAND: "+"| "-" | "*" | "/"
+COMMAND: "+"| "-" | "*" | "/" | "**"
 VAL: "-"? ("0".."9")+ "."? ("0".."9")*
-ADD: "+"
-SUB: "-"
-MUL: "*"
-DIV: "/"
 ''', parser='lalr')
 commands = {
     c: eval(f'lambda a, b: a {c} b')
-    for c in '+-*/'
+    for c in ["+", "-", "*", "/", "**"]
 }
 class RPN(lark.Transformer):
     def expr(self, args):
@@ -26,4 +22,4 @@ def main(expression):
 
 
 if __name__ == '__main__':
-    print(main('* * + 3 2 - 5 1 - 6 2'))
+    print(main('+ 1 + 2 3'))
